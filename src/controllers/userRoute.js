@@ -248,31 +248,20 @@ exports.deleteUser = function (req, res) {
   });
 };
 
-exports.sendOtp = function (req, res) {
-  console.log(req.body);
-  // var transporter = nodemailer.createTransport({
-  //   service: "gmail",
-  //   auth: {
-  //     user: "choicebest09@gmail.com", //email ID
-  //     pass: "Best79097", //Password
-  //   },
-  // });
+exports.sendOtp = async function (req, res) {
+  let email = req.body.email;
+  let otp = await otp_verification.otpSend(email);
+  console.log(otp);
 
-  // function sendMail(email, otp) {
-  //   var details = {
-  //     from: "webdev79097@gmail.com", // sender address same as above
-  //     to: email, // Receiver's email id
-  //     subject: "Your demo OTP is ", // Subject of the mail.
-  //     html: otp, // Sending OTP
-  //   };
-
-  //   transporter.sendMail(details, function (error, data) {
-  //     if (error) console.log(error);
-  //     else console.log(data);
-  //   });
-  // }
-
-  // var email = "gihanpiumal12345@gmail.com";
-  // var otp = "123456";
-  // sendMail(email, otp);
+  if (otp.success) {
+    return res.json(
+      ApiResponse.getSuccess({
+        details: "Check your email..",
+      })
+    );
+  } else {
+    return res
+      .status(400)
+      .json({ message: "can't send the OTP", error: otp.err });
+  }
 };
