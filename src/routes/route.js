@@ -17,7 +17,7 @@ router.delete("/api/user/delete/:id", auth, userAPI.deleteUser); // delete user 
 
 router.post("/api/user/login", userAPI.loging); // login
 
-router.post("/api/user/reset_password", userAPI.sendOtp); // delete user user
+router.post("/api/user/send_otp/:id", userAPI.sendOtp); // delete user user
 
 //////////////////////////////////////// POST API //////////////////////////////////
 

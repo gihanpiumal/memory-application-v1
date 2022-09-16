@@ -10,6 +10,7 @@ var nodemailer = require("nodemailer");
 ////////////////////// ADD NEW USER /////////////////////////
 exports.addUser = async function (req, res) {
   let request = req.body;
+  console.log(request);
 
   const schema = Joi.object({
     firstName: Joi.string().required().label("First Name"),
@@ -32,10 +33,13 @@ exports.addUser = async function (req, res) {
       .label("Mobile Number"),
     Avatar: Joi.string().empty("").label("Profile Picture"),
     password: Joi.string().required().label("Password"),
+    isVerified: Joi.boolean().required().label("Verified"),
+    OTPCode: Joi.number().optional().label("OTP"),
   });
   let validateResult = schema.validate(request);
 
   if (validateResult.error) {
+    console.log("1");
     return res
       .status(400)
       .send(ApiResponse.getError(validateResult.error.details[0].message));
@@ -45,6 +49,7 @@ exports.addUser = async function (req, res) {
     { email: request.email },
   ]);
   if (uniqueValidatorResponse) {
+    console.log("2");
     return res.status(409).send(ApiResponse.getError(uniqueValidatorResponse));
   }
 
@@ -65,6 +70,7 @@ exports.addUser = async function (req, res) {
 
           newUser.save((err, addedData) => {
             if (err) {
+              console.log("3");
               return res.status(400).json(
                 ApiResponse.getError({
                   error: err,
@@ -249,11 +255,52 @@ exports.deleteUser = function (req, res) {
 };
 
 exports.sendOtp = async function (req, res) {
-  let email = req.body.email;
+  let request = req.body;
+  let userId = req.params.id;
+
+  const schema = Joi.object({
+    email: Joi.string()
+      .required()
+      .empty("")
+      .regex(
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+        "xxx@xx.xx",
+        ""
+      )
+      .label("Email"),
+  });
+
+  let validateResult = schema.validate(request);
+
+  if (validateResult.error) {
+    return res
+      .status(400)
+      .send(ApiResponse.getError(validateResult.error.details[0].message));
+  }
+
+  let uniqueValidatorResponse = await uniqueValidator.findUnique(userModal, [
+    { email: request.email },
+  ]);
+  if (uniqueValidatorResponse) {
+    return res.status(409).send(ApiResponse.getError(uniqueValidatorResponse));
+  }
+
+  let email = request.email;
   let otp = await otp_verification.otpSend(email);
   console.log(otp);
 
+  let tempRequest = {
+    OTPCode: request.OTPCode,
+  };
+
   if (otp.success) {
+    let user = await userModal.findByIdAndUpdate(
+      { _id: userId },
+      {
+        $set: tempRequest,
+      },
+      { new: true }
+    );
     return res.json(
       ApiResponse.getSuccess({
         details: "Check your email..",
