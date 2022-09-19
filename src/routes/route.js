@@ -19,6 +19,10 @@ router.post("/api/user/login", userAPI.loging); // login
 
 router.post("/api/user/send_otp/:id", userAPI.sendOtp); // delete user user
 
+router.post("/api/user/email_verification/:id", userAPI.emailVerification); // email verification
+
+router.post("/api/user/reset_password", userAPI.resetPassword); // reset password
+
 //////////////////////////////////////// POST API //////////////////////////////////
 
 router.post("/api/post/new/add",auth, postAPI.addPost); // add new post
