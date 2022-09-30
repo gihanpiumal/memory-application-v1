@@ -10,7 +10,7 @@ var nodemailer = require("nodemailer");
 ////////////////////// ADD NEW USER /////////////////////////
 exports.addUser = async function (req, res) {
   let request = req.body;
-  console.log(request);
+  // console.log(request);
 
   const schema = Joi.object({
     firstName: Joi.string().required().label("First Name"),
