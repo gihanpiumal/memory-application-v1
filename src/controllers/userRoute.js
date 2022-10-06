@@ -284,7 +284,7 @@ exports.emailVerification = async function (req, res) {
 
 exports.resetPassword = async function (req, res) {
   let request = req.body;
-  let email = request.email;
+  let _id = request._id;
   const saltRounds = 10;
 
   let tempRequest = {
@@ -300,7 +300,7 @@ exports.resetPassword = async function (req, res) {
           throw hashError;
         } else {
           tempRequest.password = hash;
-          userModal.findOne({ email: email }, async function (err, doc) {
+          userModal.findOne({ _id: _id }, async function (err, doc) {
             if (doc.OTPCode == request.OTP) {
               let users = await userModal.findByIdAndUpdate(
                 { _id: doc._id },
