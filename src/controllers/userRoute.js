@@ -123,7 +123,7 @@ exports.loging = async function (req, res) {
         token: jwt.sign(
           {
             _id: user._id,
-            role: user.userName,
+            email: user.email,
           },
           process.env.secretKey,
           { expiresIn: 30000 }
@@ -142,10 +142,10 @@ exports.getUser = async function (req, res) {
 
   condition = {
     $and: [
-      request.firstName === ""
+      request.email === ""
         ? {}
         : {
-            firstName: request.firstName,
+          email: request.email,
           },
     ],
   };
