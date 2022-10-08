@@ -4,6 +4,7 @@ require("dotenv").config();
 function authService(req, res, next) {
   if (!process.env.authenticateState) {
     next();
+    console.log("cccccc");
     return;
   }
   var token = req.headers["x-access-token"];
