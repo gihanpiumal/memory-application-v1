@@ -10,7 +10,7 @@ var nodemailer = require("nodemailer");
 ////////////////////// ADD NEW USER /////////////////////////
 exports.addUser = async function (req, res) {
   let request = req.body;
-  console.log(request);
+  // console.log(request);
 
   const schema = Joi.object({
     firstName: Joi.string().required().label("First Name"),
@@ -254,6 +254,78 @@ exports.deleteUser = function (req, res) {
   });
 };
 
+exports.emailVerification = async function (req, res) {
+  let request = req.body;
+  let userId = req.params.id;
+
+  let user = await userModal.findById(userId);
+
+  let tempRequest = {
+    isVerified: true,
+  };
+
+  if (user.OTPCode == request.OTP) {
+    let users = await userModal.findByIdAndUpdate(
+      { _id: userId },
+      {
+        $set: tempRequest,
+      },
+      { new: true }
+    );
+    return res.json(
+      ApiResponse.getSuccess({
+        details: "Email veryfied sucessfully",
+      })
+    );
+  } else {
+    return res.status(400).json({ message: "email is not veryfied" });
+  }
+};
+
+exports.resetPassword = async function (req, res) {
+  let request = req.body;
+  let _id = request._id;
+  const saltRounds = 10;
+
+  let tempRequest = {
+    password: request.newPassword,
+  };
+
+  bcrypt.genSalt(saltRounds, async function (saltError, salt) {
+    if (saltError) {
+      throw saltError;
+    } else {
+      await bcrypt.hash(tempRequest.password, salt, function (hashError, hash) {
+        if (hashError) {
+          throw hashError;
+        } else {
+          tempRequest.password = hash;
+          userModal.findOne({ _id: _id }, async function (err, doc) {
+            if (doc.OTPCode == request.OTP) {
+              let users = await userModal.findByIdAndUpdate(
+                { _id: doc._id },
+                {
+                  $set: tempRequest,
+                },
+                { new: true }
+              );
+              return res.json(
+                ApiResponse.getSuccess({
+                  details: "Password Reset sucessfully",
+                })
+              );
+            } else {
+              return res.status(400).json({ message: "Password not reset" });
+            }
+          });
+        }
+      });
+    }
+  });
+
+  console.log(tempRequest.password);
+};
+
 exports.sendOtp = async function (req, res) {
   let request = req.body;
   let userId = req.params.id;
@@ -278,19 +350,19 @@ exports.sendOtp = async function (req, res) {
       .send(ApiResponse.getError(validateResult.error.details[0].message));
   }
 
-  let uniqueValidatorResponse = await uniqueValidator.findUnique(userModal, [
-    { email: request.email },
-  ]);
-  if (uniqueValidatorResponse) {
-    return res.status(409).send(ApiResponse.getError(uniqueValidatorResponse));
-  }
+  // let uniqueValidatorResponse = await uniqueValidator.findUnique(userModal, [
+  //   { email: request.email },
+  // ]);
+  // if (uniqueValidatorResponse) {
+  //   return res.status(409).send(ApiResponse.getError(uniqueValidatorResponse));
+  // }
 
   let email = request.email;
   let otp = await otp_verification.otpSend(email);
   console.log(otp);
 
   let tempRequest = {
-    OTPCode: request.OTPCode,
+    OTPCode: otp.OTP,
   };
 
   if (otp.success) {
@@ -301,6 +373,8 @@ exports.sendOtp = async function (req, res) {
       },
       { new: true }
     );
+
+    console.log(user);
     return res.json(
       ApiResponse.getSuccess({
         details: "Check your email..",
