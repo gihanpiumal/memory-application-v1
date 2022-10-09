@@ -9,7 +9,7 @@ const postAPI = require("../controllers/post");
 
 router.post("/api/user/new/add", userAPI.addUser); // add new user
 
-router.post("/api/user/get_all", userAPI.getUser); // get all user
+router.post("/api/user/get_all",auth, userAPI.getUser); // get all user
 
 router.put("/api/user/update/:id", auth, userAPI.updateUser); // update user user
 

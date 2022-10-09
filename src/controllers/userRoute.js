@@ -196,6 +196,10 @@ exports.updateUser = async function (req, res) {
       .messages({ "string.pattern.base": "Invalid user id" }),
     firstName: Joi.string().required().label("First Name"),
     lastName: Joi.string().required().label("Last Name"),
+    email: Joi.string()
+      .regex(/^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-z]+)$/)
+      .messages({ "string.pattern.base": `"Please provide valide email` })
+      .required(),
     phone: Joi.string()
       .required()
       .regex(
@@ -209,6 +213,7 @@ exports.updateUser = async function (req, res) {
   let validateResult = schema.validate(validationObject);
 
   if (validateResult.error) {
+    console.log("dd");
     return res
       .status(400)
       .send(ApiResponse.getError(validateResult.error.details[0].message));

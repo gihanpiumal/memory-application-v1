@@ -2,11 +2,11 @@ var jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 function authService(req, res, next) {
-  if (!process.env.authenticateState) {
-    next();
-    console.log("cccccc");
-    return;
-  }
+  // if (!process.env.authenticateState) {
+  //   next();
+  //   console.log("cccccc");
+  //   return;
+  // }
   var token = req.headers["x-access-token"];
   if (!token)
     return res.status(403).send({ auth: false, message: "No token provided." });
