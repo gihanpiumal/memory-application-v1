@@ -6,11 +6,11 @@ const ApiResponse = require("../services/response_helper");
 const uniqueValidator = require("../services/unique_validator");
 const otp_verification = require("../services/otp_verification");
 var nodemailer = require("nodemailer");
+const mongoose = require("mongoose");
 
 ////////////////////// ADD NEW USER /////////////////////////
 exports.addUser = async function (req, res) {
   let request = req.body;
-  // console.log(request);
 
   const schema = Joi.object({
     firstName: Joi.string().required().label("First Name"),
@@ -39,7 +39,6 @@ exports.addUser = async function (req, res) {
   let validateResult = schema.validate(request);
 
   if (validateResult.error) {
-    console.log("1");
     return res
       .status(400)
       .send(ApiResponse.getError(validateResult.error.details[0].message));
@@ -49,7 +48,6 @@ exports.addUser = async function (req, res) {
     { email: request.email },
   ]);
   if (uniqueValidatorResponse) {
-    console.log("2");
     return res.status(409).send(ApiResponse.getError(uniqueValidatorResponse));
   }
 
@@ -70,7 +68,6 @@ exports.addUser = async function (req, res) {
 
           newUser.save((err, addedData) => {
             if (err) {
-              console.log("3");
               return res.status(400).json(
                 ApiResponse.getError({
                   error: err,
@@ -145,7 +142,14 @@ exports.getUser = async function (req, res) {
       request.email === ""
         ? {}
         : {
-          email: request.email,
+            email: request.email,
+          },
+      request.id === ""
+        ? {}
+        : {
+            _id: {
+              $eq: mongoose.Types.ObjectId(request.id),
+            },
           },
     ],
   };
@@ -213,7 +217,6 @@ exports.updateUser = async function (req, res) {
   let validateResult = schema.validate(validationObject);
 
   if (validateResult.error) {
-    console.log("dd");
     return res
       .status(400)
       .send(ApiResponse.getError(validateResult.error.details[0].message));
@@ -328,7 +331,6 @@ exports.resetPassword = async function (req, res) {
     }
   });
 
-  console.log(tempRequest.password);
 };
 
 exports.sendOtp = async function (req, res) {
@@ -364,7 +366,6 @@ exports.sendOtp = async function (req, res) {
 
   let email = request.email;
   let otp = await otp_verification.otpSend(email);
-  console.log(otp);
 
   let tempRequest = {
     OTPCode: otp.OTP,
@@ -379,7 +380,6 @@ exports.sendOtp = async function (req, res) {
       { new: true }
     );
 
-    console.log(user);
     return res.json(
       ApiResponse.getSuccess({
         details: "Check your email..",
