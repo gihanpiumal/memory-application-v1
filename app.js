@@ -18,7 +18,7 @@ app.use(bodyparser.json({limit: "50mb"}));
 
 app.use(allRoutes);
 
-const PORT = process.env.backEndPort || 5000;
+const PORT = process.env.backEndPort ;
 const DB_URL = process.env.dbURL;
 
 mongoose
