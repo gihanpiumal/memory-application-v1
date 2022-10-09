@@ -28,6 +28,6 @@ mongoose
   })
   .catch((err) => console.log(err + "DB connection error"));
 
-app.listen(PORT, () => {
+app.listen(PORT || 5000, () => {
   console.log(`App is running on port ${PORT}`);
 });
